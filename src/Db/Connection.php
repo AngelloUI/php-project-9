@@ -12,7 +12,7 @@ final class Connection
 
     private static function getParsedDbUrl(): array
     {
-        $dbUrl = parse_url(parse_ini_file(__DIR__ . '/../../.env')["DATABASE_URL"]);
+        $dbUrl = parse_url($_ENV['DATABASE_URL']);
 
         return [
             'driver' => $dbUrl['scheme'],
