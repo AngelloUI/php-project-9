@@ -47,7 +47,7 @@
                                type="text"
                                name="url[name]"
                                value="{{ urlValue|default('') }}"
-                               class="form-control form-control-lg {% if flash.error is defined and flash.error|length > 0 %}is-invalid{% endif %}"
+                               class="form-control form-control-lg is-invalid"
                                placeholder="https://www.example.com">
 
                         {% if flash.error is defined %}
