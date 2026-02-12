@@ -15,7 +15,7 @@ final class Connection
         $dbUrl = parse_url($_ENV['DATABASE_URL']);
 
         return [
-            'driver' => $dbUrl['scheme'],
+            'driver' => 'pgsql',
             'host'   => $dbUrl['host'],
             'port'   => $dbUrl['port'],
             'user'   => $dbUrl['user'],
