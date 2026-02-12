@@ -52,7 +52,7 @@
 
                         {% if flash.error is defined %}
                             {% for message in flash.error %}
-                                <div class="invalid-feedback">{{ message }}</div>
+                                <div class="alert alert-danger mt-2">{{ message }}</div>
                             {% endfor %}
                         {% endif %}
                     </div>
