@@ -30,7 +30,7 @@ final class Connection
             $dbUrl = self::getParsedDbUrl();
 
             self::$pdo = new PDO("{$dbUrl['driver']}:host={$dbUrl['host']};port={$dbUrl['port']};dbname={$dbUrl['dbname']}", $dbUrl['user'], $dbUrl['pass']);
-            self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE,  PDO::FETCH_ASSOC);
+            self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         }
 
         return self::$pdo;

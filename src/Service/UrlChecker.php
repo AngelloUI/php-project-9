@@ -7,26 +7,17 @@ namespace Hexlet\Code\Service;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use Symfony\Component\DomCrawler\Crawler;
-use function optional;
 
 final class UrlChecker
 {
     public function __construct(
         private Client $client
-    )
-    {
+    ) {
     }
 
     public function check(string $url): array
     {
         try {
-            /*
-            $response = $this->client->request('GET', $url, [
-                'headers' => [
-                    //'User-Agent' => 'Mozilla/5.0 (compatible; UrlChecker/1.0)'
-                ]]);
-            */
-
             $response = $this->client->request('GET', $url);
             $crawler = new Crawler((string)$response->getBody());
 
