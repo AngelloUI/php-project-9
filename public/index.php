@@ -73,36 +73,35 @@ $app->post('/urls', function ($request, $response) use ($twig, $urlsRepository, 
     $inputUrl = $request->getParsedBody()['url']['name'] ?? '';
     $error = null;
 
-    if (empty($inputUrl)) {
-        $error = 'URL не должен быть пустым';
-    } else {
-        $url = parse_url($request->getParsedBody()['url']['name']);
-        $url = $url['scheme'] . '://' . $url['host'];
+    $validator = new Validator(['url' => $inputUrl]);
+    $validator->rule('required', 'url')->message('URL не должен быть пустым');
+    $validator->rule('url', 'url')->message('Некорректный URL');
+    $validator->rule('lengthMax', 'url', 255)->message('URL слишком длинный');
 
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            $error = 'Некорректный URL';
-        } elseif (strlen($url) > 255) {
-            $error = 'URL слишком длинный';
-        } else {
-            if ($data = $urlsRepository->findByName($url)){
-                $container->get('flash')->addMessage('success', "Страница уже существует");
-            } else {
-                $data = $urlsRepository->save($url);
-                $container->get('flash')->addMessage('success', "Страница успешно добавлена");
-            }
+    if (!$validator->validate()) {
+        $error = $validator->errors()['url'][0];
 
-            return $response
-                ->withHeader('Location', $router->urlFor('url.get', ['id' => $data['id']]))
-                ->withStatus(302);
-        }
+        return $twig->render($response->withStatus(422), 'main.html.twig', [
+            'flash' => [
+                'error' => [$error]
+            ],
+            'urlName' => $inputUrl
+        ]);
     }
 
-    return $twig->render($response->withStatus(422), 'main.html.twig', [
-        'flash' => [
-            'error' => [$error]
-        ],
-        'urlName' => $inputUrl
-    ]);
+    $url = parse_url($request->getParsedBody()['url']['name']);
+    $url = $url['scheme'] . '://' . $url['host'];
+
+    if ($data = $urlsRepository->findByName($url)){
+        $container->get('flash')->addMessage('success', "Страница уже существует");
+    } else {
+        $data = $urlsRepository->save($url);
+        $container->get('flash')->addMessage('success', "Страница успешно добавлена");
+    }
+
+    return $response
+        ->withHeader('Location', $router->urlFor('url.get', ['id' => $data['id']]))
+        ->withStatus(302);
 
 })->setName('urls.post');
 
