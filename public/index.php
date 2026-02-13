@@ -71,18 +71,18 @@ $app->get('/urls/{id}', function ($request, $response, $args) use ($twig, $urlsR
 
 $app->post('/urls', function ($request, $response) use ($twig, $urlsRepository, $router, $container) {
     $inputUrl = $request->getParsedBody()['url']['name'] ?? '';
+    $error = null;
 
     if (empty($inputUrl)) {
-        $container->get('flash')->addMessage('error', 'URL не должен быть пустым');
+        $error = 'URL не должен быть пустым';
     } else {
         $url = parse_url($request->getParsedBody()['url']['name']);
         $url = $url['scheme'] . '://' . $url['host'];
 
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            $container->get('flash')->addMessage('error', 'Некорректный URL');
-            $container->get('flash')->addMessage('urlName', $inputUrl);
+            $error = 'Некорректный URL';
         } elseif (strlen($url) > 255) {
-            $container->get('flash')->addMessage('error', 'URL слишком длинный');
+            $error = 'URL слишком длинный';
         } else {
             if ($data = $urlsRepository->findByName($url)){
                 $container->get('flash')->addMessage('success', "Страница уже существует");
@@ -97,9 +97,12 @@ $app->post('/urls', function ($request, $response) use ($twig, $urlsRepository, 
         }
     }
 
-    return $response
-        ->withHeader('Location', $router->urlFor('main'))
-        ->withStatus(302);
+    return $twig->render($response->withStatus(422), 'main.html.twig', [
+        'flash' => [
+            'error' => [$error]
+        ],
+        'urlName' => $inputUrl
+    ]);
 
 })->setName('urls.post');
 
