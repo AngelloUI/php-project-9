@@ -46,10 +46,10 @@ $app->get('/welcome', function ($request, $response) use ($twig) {
     return $twig->render($response, 'welcome.html.twig');
 })->setName('welcome');
 
-$app->get('/', function ($request, $response) use ($twig, $container) {
+$app->get('/', function ($request, $response, $args) use ($twig, $container) {
     $messages = $container->get('flash')->getMessages();
 
-    return $twig->render($response, 'main.html.twig', ['flash' => $messages]);
+    return $twig->render($response, 'main.html.twig', ['flash' => $messages, 'urlName' => $messages['urlName'][0]]);
 })->setName('main');
 
 $app->get('/urls', function ($request, $response) use ($twig, $urlsRepository) {
@@ -80,6 +80,7 @@ $app->post('/urls', function ($request, $response) use ($twig, $urlsRepository, 
 
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
             $container->get('flash')->addMessage('error', 'Некорректный URL');
+            $container->get('flash')->addMessage('urlName', $inputUrl);
         } elseif (strlen($url) > 255) {
             $container->get('flash')->addMessage('error', 'URL слишком длинный');
         } else {
