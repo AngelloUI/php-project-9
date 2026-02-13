@@ -39,7 +39,20 @@ $urlChecker = new UrlChecker($client);
 
 $app->add(TwigMiddleware::create($app, $twig));
 
-$app->addErrorMiddleware(true, true, true);
+$errorMiddleware = $app->addErrorMiddleware(true, true, true);
+
+$errorHandler = function (
+    Psr\Http\Message\ServerRequestInterface $request,
+    Throwable $exception,
+    bool $displayErrorDetails,
+    bool $logErrors,
+    bool $logErrorDetails
+) use ($twig) {
+    $response = new Slim\Psr7\Response();
+    return $twig->render($response->withStatus(500), 'error.html.twig');
+};
+
+$errorMiddleware->setDefaultErrorHandler($errorHandler);
 
 $app->get('/welcome', function ($request, $response) use ($twig) {
 
@@ -70,7 +83,8 @@ $app->get('/urls/{id}', function ($request, $response, $args) use ($twig, $urlsR
 })->setName('url.get');
 
 $app->post('/urls', function ($request, $response) use ($twig, $urlsRepository, $router, $container) {
-    $inputUrl = $request->getParsedBody()['url']['name'] ?? '';
+    $inputUrl = (array) $request->getParsedBody();
+    $inputUrl = $inputUrl['url']['name'] ?? '';
     $error = null;
 
     $validator = new Validator(['url' => $inputUrl]);
@@ -89,7 +103,7 @@ $app->post('/urls', function ($request, $response) use ($twig, $urlsRepository, 
         ]);
     }
 
-    $url = parse_url($request->getParsedBody()['url']['name']);
+    $url = parse_url($inputUrl);
     $url = $url['scheme'] . '://' . $url['host'];
 
     if ($data = $urlsRepository->findByName($url)){
