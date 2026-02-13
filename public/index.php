@@ -83,9 +83,8 @@ $app->get('/urls/{id}', function ($request, $response, $args) use ($twig, $urlsR
 })->setName('url.get');
 
 $app->post('/urls', function ($request, $response) use ($twig, $urlsRepository, $router, $container) {
-    $inputUrl = (array) $request->getParsedBody();
-    $inputUrl = $inputUrl['url']['name'] ?? '';
-    $error = null;
+    $parsedBody = $request->getParsedBody();
+    $inputUrl = is_array($parsedBody) && isset($parsedBody['url']['name']) ? $parsedBody['url']['name'] : '';
 
     $validator = new Validator(['url' => $inputUrl]);
     $validator->rule('required', 'url')->message('URL не должен быть пустым');
@@ -114,7 +113,7 @@ $app->post('/urls', function ($request, $response) use ($twig, $urlsRepository, 
     }
 
     return $response
-        ->withHeader('Location', $router->urlFor('url.get', ['id' => $data['id']]))
+        ->withHeader('Location', $router->urlFor('url.get', ['id' => (string)$data['id']]))
         ->withStatus(302);
 
 })->setName('urls.post');
