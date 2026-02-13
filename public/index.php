@@ -92,7 +92,8 @@ $app->post('/urls', function ($request, $response) use ($twig, $urlsRepository, 
     $validator->rule('lengthMax', 'url', 255)->message('URL слишком длинный');
 
     if (!$validator->validate()) {
-        $error = $validator->errors()['url'][0];
+        $errors = $validator->errors() ?: [];
+        $error = $errors['url'][0] ?? null;
 
         return $twig->render($response->withStatus(422), 'main.html.twig', [
             'flash' => [
@@ -138,7 +139,7 @@ $app->post('/urls/{id}/checks', function ($request, $response, $args) use ($urls
     }
 
     return $response
-        ->withHeader('Location', $router->urlFor('url.get', ['id' => $id]))
+        ->withHeader('Location', $router->urlFor('url.get', ['id' => (string) $id]))
         ->withStatus(302);
 })->setName('url.post.check');
 
